@@ -43,7 +43,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete, onEdit })
   };
 
   return (
-    <li className="group flex items-center p-4 transition-colors duration-200 hover:bg-slate-50 dark:hover:bg-slate-800/50">
+    <li className="group flex items-center p-4 transition-colors duration-200 hover:bg-slate-50 dark:hover:bg-slate-700">
       <div className="flex-shrink-0">
         <label htmlFor={`task-${task.id}`} className="flex items-center cursor-pointer">
           <input

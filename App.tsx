@@ -64,7 +64,7 @@ const App: React.FC = () => {
       case 'active':
         return tasks.filter(task => !task.completed);
       case 'completed':
-        return tasks.filter(task => !task.completed);
+        return tasks.filter(task => task.completed);
       default:
         return tasks;
     }
