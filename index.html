@@ -47,9 +47,434 @@
   }
 }
 </script>
+<!-- Add Babel to transpile JSX in the browser -->
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
   <body class="bg-slate-100 dark:bg-slate-900">
     <div id="root"></div>
-    <script type="module" src="./index.tsx"></script>
+    <script type="text/babel" data-type="module">
+      import React, { useState, useEffect, useMemo, useRef } from 'react';
+      import ReactDOM from 'react-dom/client';
+
+      // All components and hooks are defined here directly
+      // to avoid issues with browser module resolution for TSX files.
+
+      // From components/Icons.tsx
+      const ListChecksIcon = ({ className }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <path d="m3 17 2 2 4-4" />
+          <path d="m3 7 2 2 4-4" />
+          <path d="M13 6h8" />
+          <path d="M13 12h8" />
+          <path d="M13 18h8" />
+        </svg>
+      );
+      const PlusIcon = ({ className }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <path d="M5 12h14" />
+          <path d="M12 5v14" />
+        </svg>
+      );
+      const ClipboardListIcon = ({ className }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+          <path d="M12 11h4" />
+          <path d="M12 16h4" />
+          <path d="M8 11h.01" />
+          <path d="M8 16h.01" />
+        </svg>
+      );
+      const PencilIcon = ({ className }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+          <path d="m15 5 4 4" />
+        </svg>
+      );
+      const TrashIcon = ({ className }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <path d="M3 6h18" />
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+          <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+        </svg>
+      );
+      const SunIcon = ({ className }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <circle cx="12" cy="12" r="4" />
+          <path d="M12 2v2" />
+          <path d="M12 20v2" />
+          <path d="m4.93 4.93 1.41 1.41" />
+          <path d="m17.66 17.66 1.41 1.41" />
+          <path d="M2 12h2" />
+          <path d="M20 12h2" />
+          <path d="m6.34 17.66-1.41 1.41" />
+          <path d="m19.07 4.93-1.41 1.41" />
+        </svg>
+      );
+      const MoonIcon = ({ className }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+        </svg>
+      );
+
+      // From hooks/useTheme.ts
+      const useTheme = () => {
+        const [theme, setTheme] = useState(() => {
+          if (typeof window === 'undefined') {
+            return 'light';
+          }
+          if (window.localStorage.getItem('theme') === 'dark' || 
+              (!('theme' in window.localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            return 'dark';
+          }
+          return 'light';
+        });
+
+        const toggleTheme = () => {
+          setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
+        };
+
+        useEffect(() => {
+          const root = window.document.documentElement;
+          if (theme === 'dark') {
+            root.classList.add('dark');
+            window.localStorage.setItem('theme', 'dark');
+          } else {
+            root.classList.remove('dark');
+            window.localStorage.setItem('theme', 'light');
+          }
+        }, [theme]);
+
+        return [theme, toggleTheme];
+      };
+
+      // From components/Header.tsx
+      const Header = ({ theme, toggleTheme }) => {
+        return (
+          <header className="flex justify-between items-center mb-8">
+            <div className="flex items-center space-x-4 space-x-reverse">
+              <ListChecksIcon className="w-10 h-10 text-white"/>
+              <h1 className="text-3xl md:text-4xl font-bold text-white tracking-wider">
+                قائمة مهامي
+              </h1>
+            </div>
+            <button onClick={toggleTheme} aria-label="تبديل الثيم" className="p-2 text-white/80 hover:text-white transition-colors">
+              {theme === 'light' ? <MoonIcon className="w-6 h-6" /> : <SunIcon className="w-6 h-6" />}
+            </button>
+          </header>
+        );
+      };
+
+      // From components/TaskInputForm.tsx
+      const TaskInputForm = ({ onAddTask }) => {
+        const [text, setText] = useState('');
+
+        const handleSubmit = (e) => {
+          e.preventDefault();
+          onAddTask(text);
+          setText('');
+        };
+
+        return (
+          <form onSubmit={handleSubmit} className="flex items-center bg-white dark:bg-slate-800 rounded-lg shadow-md p-2">
+            <button
+              type="submit"
+              aria-label="إضافة مهمة"
+              className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-blue-500 hover:bg-blue-600 text-white transition-colors"
+            >
+              <PlusIcon className="w-6 h-6" />
+            </button>
+            <input
+              type="text"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="أضف مهمة جديدة..."
+              className="w-full bg-transparent border-none px-4 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-0"
+            />
+          </form>
+        );
+      };
+      
+      // From components/TaskItem.tsx
+      const TaskItem = ({ task, onToggle, onDelete, onEdit }) => {
+        const [isEditing, setIsEditing] = useState(false);
+        const [editText, setEditText] = useState(task.text);
+        const inputRef = useRef(null);
+
+        useEffect(() => {
+          if (isEditing && inputRef.current) {
+            inputRef.current.focus();
+          }
+        }, [isEditing]);
+
+        const handleEdit = () => {
+          setIsEditing(true);
+        };
+
+        const handleSave = () => {
+          if (editText.trim() !== '') {
+            onEdit(task.id, editText.trim());
+          } else {
+            setEditText(task.text); // revert if empty
+          }
+          setIsEditing(false);
+        };
+
+        const handleKeyDown = (e) => {
+          if (e.key === 'Enter') {
+            handleSave();
+          } else if (e.key === 'Escape') {
+            setEditText(task.text);
+            setIsEditing(false);
+          }
+        };
+
+        return (
+          <li className="group flex items-center p-4 transition-colors duration-200 hover:bg-slate-50 dark:hover:bg-slate-700">
+            <div className="flex-shrink-0">
+              <label htmlFor={`task-${task.id}`} className="flex items-center cursor-pointer">
+                <input
+                  id={`task-${task.id}`}
+                  type="checkbox"
+                  checked={task.completed}
+                  onChange={() => onToggle(task.id)}
+                  className="hidden"
+                />
+                <span className={`w-6 h-6 border-2 rounded-full flex items-center justify-center transition-all duration-300 ${
+                  task.completed
+                    ? 'bg-blue-500 border-blue-500'
+                    : 'border-slate-300 dark:border-slate-600 group-hover:border-blue-400'
+                }`}>
+                  {task.completed && (
+                    <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </span>
+              </label>
+            </div>
+
+            <div className="flex-grow mx-4">
+              {isEditing ? (
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={editText}
+                  onChange={(e) => setEditText(e.target.value)}
+                  onBlur={handleSave}
+                  onKeyDown={handleKeyDown}
+                  className="w-full bg-transparent border-b border-blue-500 focus:outline-none focus:ring-0 text-slate-800 dark:text-slate-200"
+                />
+              ) : (
+                <p
+                  onDoubleClick={handleEdit}
+                  className={`cursor-pointer transition-all duration-300 ${
+                    task.completed ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-700 dark:text-slate-300'
+                  }`}
+                >
+                  {task.text}
+                </p>
+              )}
+            </div>
+
+            <div className="flex items-center space-x-2 space-x-reverse opacity-0 group-hover:opacity-100 transition-opacity">
+              <button onClick={handleEdit} aria-label="تعديل المهمة" className="p-2 text-slate-400 hover:text-blue-500 dark:hover:text-blue-400">
+                <PencilIcon className="w-5 h-5" />
+              </button>
+              <button onClick={() => onDelete(task.id)} aria-label="حذف المهمة" className="p-2 text-slate-400 hover:text-red-500 dark:hover:text-red-400">
+                <TrashIcon className="w-5 h-5" />
+              </button>
+            </div>
+          </li>
+        );
+      };
+
+      // From components/TaskList.tsx
+      const TaskList = ({ tasks, onToggleTask, onDeleteTask, onEditTask }) => {
+        if (tasks.length === 0) {
+          return (
+            <div className="text-center py-16 px-4">
+              <ClipboardListIcon className="w-16 h-16 mx-auto text-slate-400 dark:text-slate-500" />
+              <p className="mt-4 text-slate-500 dark:text-slate-400">لا توجد مهام لعرضها. أضف مهمة جديدة لتبدأ!</p>
+            </div>
+          );
+        }
+
+        return (
+          <ul className="divide-y divide-slate-200 dark:divide-slate-700">
+            {tasks.map((task) => (
+              <TaskItem
+                key={task.id}
+                task={task}
+                onToggle={onToggleTask}
+                onDelete={onDeleteTask}
+                onEdit={onEditTask}
+              />
+            ))}
+          </ul>
+        );
+      };
+
+      // From components/FilterControls.tsx
+      const FilterControls = ({ filter, onFilterChange }) => {
+        const filters = [
+          { key: 'all', label: 'الكل' },
+          { key: 'active', label: 'النشطة' },
+          { key: 'completed', label: 'المكتملة' },
+        ];
+
+        return (
+          <div className="flex justify-center space-x-4 space-x-reverse">
+            {filters.map(({ key, label }) => (
+              <button
+                key={key}
+                onClick={() => onFilterChange(key)}
+                className={`transition-colors ${
+                  filter === key
+                    ? 'text-blue-500 dark:text-blue-400 font-bold'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        );
+      };
+
+      // From components/TaskStats.tsx
+      const TaskStats = ({ tasks }) => {
+        const incompleteTasks = tasks.filter(task => !task.completed).length;
+
+        const getArabicPlural = (count) => {
+          if (count === 0) return 'لا توجد مهام';
+          if (count === 1) return 'مهمة واحدة متبقية';
+          if (count === 2) return 'مهمتان متبقيتان';
+          if (count >= 3 && count <= 10) return `${count} مهام متبقية`;
+          return `${count} مهمة متبقية`;
+        }
+
+        return (
+          <span>{getArabicPlural(incompleteTasks)}</span>
+        );
+      };
+      
+
+      // From App.tsx
+      const App = () => {
+        const [theme, toggleTheme] = useTheme();
+        const [tasks, setTasks] = useState(() => {
+          try {
+            const localTasks = window.localStorage.getItem('tasks');
+            return localTasks ? JSON.parse(localTasks) : [];
+          } catch (error) {
+            console.error("Error reading tasks from localStorage", error);
+            return [];
+          }
+        });
+
+        const [filter, setFilter] = useState('all');
+
+        useEffect(() => {
+          try {
+            window.localStorage.setItem('tasks', JSON.stringify(tasks));
+          } catch (error) {
+            console.error("Error writing tasks to localStorage", error);
+          }
+        }, [tasks]);
+
+        const addTask = (text) => {
+          if (text.trim() === '') return;
+          const newTask = {
+            id: Date.now(),
+            text,
+            completed: false,
+          };
+          setTasks(prevTasks => [newTask, ...prevTasks]);
+        };
+
+        const toggleTask = (id) => {
+          setTasks(tasks.map(task => 
+            task.id === id ? { ...task, completed: !task.completed } : task
+          ));
+        };
+
+        const deleteTask = (id) => {
+          setTasks(tasks.filter(task => task.id !== id));
+        };
+
+        const editTask = (id, newText) => {
+          setTasks(tasks.map(task =>
+            task.id === id ? { ...task, text: newText } : task
+          ));
+        };
+        
+        const clearCompleted = () => {
+          setTasks(tasks.filter(task => !task.completed));
+        }
+
+        const filteredTasks = useMemo(() => {
+          switch (filter) {
+            case 'active':
+              return tasks.filter(task => !task.completed);
+            case 'completed':
+              return tasks.filter(task => task.completed);
+            default:
+              return tasks;
+          }
+        }, [tasks, filter]);
+
+        return (
+          <div className="min-h-screen font-sans text-slate-800 dark:text-slate-200 transition-colors duration-500">
+            <div className="absolute top-0 left-0 w-full h-72 bg-gradient-to-br from-cyan-500 to-blue-600 dark:from-cyan-800 dark:to-blue-900 rounded-b-3xl -z-10"></div>
+            <main className="max-w-xl mx-auto px-4 py-8 md:py-16">
+              <Header theme={theme} toggleTheme={toggleTheme} />
+              <TaskInputForm onAddTask={addTask} />
+              
+              <div className="mt-8 bg-white dark:bg-slate-800 rounded-lg shadow-lg overflow-hidden">
+                <TaskList
+                  tasks={filteredTasks}
+                  onToggleTask={toggleTask}
+                  onDeleteTask={deleteTask}
+                  onEditTask={editTask}
+                />
+                <div className="p-4 flex justify-between items-center text-sm text-slate-500 dark:text-slate-400 border-t border-slate-200 dark:border-slate-700">
+                  <TaskStats tasks={tasks} />
+                  <div className="hidden sm:block">
+                    <FilterControls filter={filter} onFilterChange={setFilter} />
+                  </div>
+                  <button
+                    onClick={clearCompleted}
+                    className="hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
+                  >
+                    مسح المكتمل
+                  </button>
+                </div>
+              </div>
+              
+              <div className="mt-4 sm:hidden bg-white dark:bg-slate-800 rounded-lg shadow-lg p-3">
+                <FilterControls filter={filter} onFilterChange={setFilter} />
+              </div>
+              
+              <footer className="text-center mt-16 text-slate-500 dark:text-slate-400 text-sm">
+                <p>صُمم لإنجاز مهامك اليومية بكفاءة.</p>
+              </footer>
+            </main>
+          </div>
+        );
+      };
+      
+      const rootElement = document.getElementById('root');
+      if (!rootElement) {
+        throw new Error("Could not find root element to mount to");
+      }
+      
+      const root = ReactDOM.createRoot(rootElement);
+      root.render(
+        <React.StrictMode>
+            <App />
+        </React.StrictMode>
+      );
+    </script>
   </body>
 </html>

@@ -1,9 +1,1 @@
-
-export interface Task {
-  id: number;
-  text: string;
-  completed: boolean;
-}
-
-export type FilterType = 'all' | 'active' | 'completed';
-   
+// This file is no longer used. The application logic has been consolidated into index.html.
